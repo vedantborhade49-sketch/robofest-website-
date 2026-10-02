@@ -88,11 +88,11 @@ const CinematicHero = () => {
       </div>
 
       {/* 4. Main Typography & Content Area */}
-      <div className="relative z-30 w-full h-full flex flex-col items-center justify-center px-6">
+      <div className="relative z-30 w-full h-full flex flex-col justify-center px-6 md:px-16 lg:px-24">
         
         {/* TEXT 1: STALLION AEROSAR */}
-        <div className="text-1 absolute w-full flex flex-col items-center justify-center text-center">
-          <p className="font-technical text-aerosar-red mb-4 tracking-[0.3em] text-xs md:text-sm">SYSTEM INITIALIZATION</p>
+        <div className="text-1 absolute left-0 w-full flex flex-col items-center justify-center text-center">
+          <p className="font-technical text-aerosar-red mb-4 tracking-[0.3em] text-xs md:text-sm uppercase">System Initialization</p>
           <h1 className="font-space-grotesk text-6xl md:text-8xl lg:text-[7rem] font-medium leading-[1.05] tracking-tighter text-aerosar-white">
             STALLION
             <br />
@@ -101,18 +101,33 @@ const CinematicHero = () => {
         </div>
 
         {/* TEXT 2: AUTONOMOUS SEARCH & RESCUE DRONE */}
-        <div className="text-2 absolute w-full flex flex-col items-center justify-center text-center opacity-0 translate-y-[50px]">
-          <h2 className="font-space-grotesk text-4xl md:text-6xl lg:text-7xl font-medium leading-[1.05] tracking-tight text-aerosar-white max-w-5xl uppercase">
-            <span className="block text-aerosar-red mb-2">Autonomous</span>
-            <span className="block text-aerosar-white/90">Search & Rescue</span>
-            <span className="block text-aerosar-white/50">Drone</span>
-          </h2>
-          <div className="mt-8 font-technical text-aerosar-white/70 text-xs tracking-[0.2em] flex flex-wrap justify-center gap-4">
-            <span>GPS-DENIED CAPABLE</span>
-            <span className="text-aerosar-red/50">/</span>
-            <span>AI-DRIVEN</span>
-            <span className="text-aerosar-red/50">/</span>
-            <span>CONFINED SPACE ENTRY</span>
+        <div className="text-2 absolute max-w-4xl flex gap-5 md:gap-8 opacity-0 translate-y-[50px]">
+          {/* Animated Red Accent Line */}
+          <div className="hidden md:block w-[2px] bg-aerosar-red mt-3 opacity-80" />
+          
+          <div className="flex flex-col">
+            <h2 className="font-technical text-aerosar-grey-light tracking-[0.3em] mb-4 text-xs md:text-sm uppercase">
+              Mission Profile
+            </h2>
+            
+            <h1 className="font-space-grotesk text-5xl md:text-7xl lg:text-[5.5rem] font-medium leading-[1.05] tracking-tight text-aerosar-white mb-8">
+              <span className="block">AUTONOMOUS</span>
+              <span className="block text-aerosar-red">SEARCH <span className="text-aerosar-white">&</span> RESCUE</span>
+              <span className="block text-aerosar-white/50 text-3xl md:text-5xl mt-2">DRONE</span>
+            </h1>
+
+            <div className="font-technical text-aerosar-white/70 text-[10px] md:text-xs tracking-widest flex flex-col md:flex-row gap-2 md:gap-4 mb-10">
+              <span>GPS-DENIED</span>
+              <span className="hidden md:inline text-aerosar-red/50">/</span>
+              <span>CONFINED ENVIRONMENTS</span>
+              <span className="hidden md:inline text-aerosar-red/50">/</span>
+              <span>AUTONOMOUS UAV</span>
+            </div>
+
+            <p className="font-inter text-aerosar-grey-light text-xs md:text-sm lg:text-base max-w-xl leading-relaxed uppercase tracking-[0.1em] border-l border-aerosar-grey-mid pl-4 md:pl-5">
+              When access becomes the problem,<br/>
+              <span className="text-aerosar-white font-medium">Aerosar goes in.</span>
+            </p>
           </div>
         </div>
 
