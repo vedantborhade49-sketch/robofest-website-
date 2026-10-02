@@ -1,338 +1,428 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Html } from '@react-three/drei';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const DroneModel = ({ dummyRef }) => {
-  const masterRef = useRef();
-  const frameRef = useRef();
-  const bodyRef = useRef();
-  const fcRef = useRef();
-  const computerRef = useRef();
-  const sensorRef = useRef();
-  const propsRef = useRef();
-
-  useFrame((state) => {
-    if (!masterRef.current) return;
-    
-    const d = dummyRef.current;
-    
-    // Smooth mouse parallax
-    const mouseX = (state.pointer.x * Math.PI) / 10;
-    const mouseY = (state.pointer.y * Math.PI) / 10;
-    
-    masterRef.current.position.z = d.droneZ;
-    masterRef.current.position.y = d.droneY + Math.sin(state.clock.elapsedTime) * 0.1 + mouseY * 0.2;
-    masterRef.current.position.x = mouseX * 0.2;
-    
-    masterRef.current.rotation.y = d.droneRotY + mouseX * 0.1;
-    masterRef.current.rotation.x = d.droneRotX - mouseY * 0.1;
-
-    frameRef.current.position.y = d.explodeFrame;
-    fcRef.current.position.y = d.explodeFC;
-    computerRef.current.position.y = d.explodeComputer;
-    sensorRef.current.position.y = d.explodeSensor;
-    
-    // Spin props
-    if (propsRef.current) {
-      propsRef.current.rotation.y += 0.5;
-    }
-  });
-
-  return (
-    <group ref={masterRef}>
-      {/* Frame / Cage */}
-      <group ref={frameRef}>
-        <mesh rotation={[Math.PI/2, 0, 0]}>
-          <torusGeometry args={[2.2, 0.04, 16, 64]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.2} />
-        </mesh>
-        <Html position={[2.5, 0, 0]} className="callout-frame callout-all opacity-0 pointer-events-none">
-          <div className="flex items-center gap-4 w-[200px]">
-             <div className="w-12 h-[1px] bg-aerosar-grey-dark/80 relative">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-aerosar-white/50" />
-             </div>
-             <div className="font-technical text-[10px] tracking-widest uppercase text-aerosar-white">
-               04 <br/><span className="text-aerosar-grey-light">PROTECTED AIRFRAME</span>
-             </div>
-          </div>
-        </Html>
-      </group>
-
-      {/* Body & Arms */}
-      <group ref={bodyRef}>
-        <mesh>
-          <boxGeometry args={[1.2, 0.3, 1.2]} />
-          <meshStandardMaterial color="#111" roughness={0.6} metalness={0.5} />
-        </mesh>
-        {/* Arms */}
-        {[Math.PI/4, -Math.PI/4, Math.PI*3/4, -Math.PI*3/4].map((rot, i) => (
-          <group key={i} rotation={[0, rot, 0]}>
-            <mesh position={[1.2, 0, 0]}>
-              <boxGeometry args={[1.4, 0.1, 0.1]} />
-              <meshStandardMaterial color="#1a1a1a" roughness={0.7} />
-            </mesh>
-            {/* Motor mount */}
-            <mesh position={[1.9, 0.1, 0]}>
-              <cylinderGeometry args={[0.15, 0.15, 0.2, 16]} />
-              <meshStandardMaterial color="#0a0a0a" roughness={0.5} />
-            </mesh>
-          </group>
-        ))}
-        {/* Props Container */}
-        <group ref={propsRef}>
-          {[[1.34, 1.34], [1.34, -1.34], [-1.34, 1.34], [-1.34, -1.34]].map((pos, i) => (
-            <mesh key={i} position={[pos[0], 0.2, pos[1]]}>
-              <cylinderGeometry args={[0.8, 0.8, 0.02, 32]} />
-              <meshStandardMaterial color="#ffffff" transparent opacity={0.05} />
-            </mesh>
-          ))}
-        </group>
-      </group>
-
-      {/* Flight Controller */}
-      <group ref={fcRef} position={[0, 0.25, 0]}>
-        <mesh>
-          <boxGeometry args={[0.5, 0.1, 0.5]} />
-          <meshStandardMaterial color="#222" roughness={0.5} />
-        </mesh>
-        <mesh position={[0.1, 0.06, 0.1]}>
-          <boxGeometry args={[0.05, 0.02, 0.05]} />
-          <meshBasicMaterial color="#C91F2D" />
-        </mesh>
-        <Html position={[-0.6, 0.2, 0]} className="callout-fc callout-all opacity-0 pointer-events-none">
-          <div className="flex items-center gap-4 flex-row-reverse w-[200px] ml-[-200px]">
-             <div className="w-12 h-[1px] bg-aerosar-red/80 relative">
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-aerosar-red" />
-             </div>
-             <div className="font-technical text-[10px] tracking-widest uppercase text-aerosar-white text-right">
-               01 <br/><span className="text-aerosar-red">FLIGHT CONTROL</span>
-             </div>
-          </div>
-        </Html>
-      </group>
-
-      {/* Companion Computer */}
-      <group ref={computerRef} position={[0, -0.25, 0]}>
-        <mesh>
-          <boxGeometry args={[0.8, 0.15, 0.8]} />
-          <meshStandardMaterial color="#151515" roughness={0.4} metalness={0.6} />
-        </mesh>
-        <mesh position={[-0.3, 0, 0.41]}>
-           <boxGeometry args={[0.1, 0.05, 0.02]} />
-           <meshBasicMaterial color="#C91F2D" />
-        </mesh>
-        <Html position={[0.8, -0.2, 0]} className="callout-computer callout-all opacity-0 pointer-events-none">
-          <div className="flex items-center gap-4 w-[200px]">
-             <div className="w-12 h-[1px] bg-aerosar-red/80 relative">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-aerosar-red" />
-             </div>
-             <div className="font-technical text-[10px] tracking-widest uppercase text-aerosar-white">
-               02 <br/><span className="text-aerosar-red">COMPANION COMPUTER</span>
-             </div>
-          </div>
-        </Html>
-      </group>
-
-      {/* Sensors */}
-      <group ref={sensorRef} position={[0, -0.45, 0.4]}>
-        {/* Main Sensor block */}
-        <mesh>
-          <boxGeometry args={[0.4, 0.2, 0.3]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.3} />
-        </mesh>
-        {/* Lenses */}
-        <mesh position={[-0.1, 0, 0.16]} rotation={[Math.PI/2, 0, 0]}>
-          <cylinderGeometry args={[0.06, 0.06, 0.05, 16]} />
-          <meshStandardMaterial color="#111" roughness={0.1} metalness={0.9} />
-        </mesh>
-        <mesh position={[0.1, 0, 0.16]} rotation={[Math.PI/2, 0, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 0.05, 16]} />
-          <meshStandardMaterial color="#111" roughness={0.1} metalness={0.9} />
-        </mesh>
-        {/* LiDAR puck */}
-        <mesh position={[0, -0.15, -0.1]}>
-          <cylinderGeometry args={[0.15, 0.15, 0.1, 32]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.7} />
-        </mesh>
-        <mesh position={[0, -0.15, -0.1]}>
-          <cylinderGeometry args={[0.13, 0.13, 0.11, 32]} />
-          <meshBasicMaterial color="#050505" />
-        </mesh>
-        <Html position={[-0.5, -0.2, 0.2]} className="callout-sensor callout-all opacity-0 pointer-events-none">
-          <div className="flex items-center gap-4 flex-row-reverse w-[200px] ml-[-200px]">
-             <div className="w-12 h-[1px] bg-aerosar-red/80 relative">
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-aerosar-red" />
-             </div>
-             <div className="font-technical text-[10px] tracking-widest uppercase text-aerosar-white text-right">
-               03 <br/><span className="text-aerosar-red">PERCEPTION (CAM/LIDAR)</span>
-             </div>
-          </div>
-        </Html>
-      </group>
-    </group>
-  );
-};
-
 const SystemSection = () => {
-  const sectionRef = useRef(null);
-  const dummyRef = useRef({
-    droneZ: -15,
-    droneY: 0,
-    droneRotX: 0.2,
-    droneRotY: -0.5,
-    explodeFrame: 0,
-    explodeFC: 0,
-    explodeComputer: 0,
-    explodeSensor: 0,
-  });
+  const containerRef = useRef(null);
+  const pinRef = useRef(null);
+
+  // Define themes
+  const themes = {
+    dark: {
+      "--sys-bg": "#050505",
+      "--sys-text": "#F5F5F5",
+      "--sys-text-sec": "#D6D6D6",
+      "--sys-text-muted": "#A3A3A3",
+    },
+    light: {
+      "--sys-bg": "#ffffff",
+      "--sys-text": "#050505",
+      "--sys-text-sec": "#262626",
+      "--sys-text-muted": "#666666",
+    },
+    lightGrey: {
+      "--sys-bg": "#F0F0F0",
+      "--sys-text": "#050505",
+      "--sys-text-sec": "#262626",
+      "--sys-text-muted": "#666666",
+    },
+    darkGrey: {
+      "--sys-bg": "#1A1A1A",
+      "--sys-text": "#F5F5F5",
+      "--sys-text-sec": "#D6D6D6",
+      "--sys-text-muted": "#A3A3A3",
+    }
+  };
 
   useEffect(() => {
+    // Initial setup to ensure dark theme at the very start
+    gsap.set(containerRef.current, themes.dark);
+
     let ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      
+      // ==========================================
+      // 1. OPENING COLOR TRANSITION (Dark -> Light)
+      // ==========================================
+      gsap.to(containerRef.current, {
+        ...themes.light,
         scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "+=8000",
-          pin: true,
+          trigger: ".opening-phase",
+          start: "top 70%",
+          end: "bottom 90%",
           scrub: 1,
         }
       });
 
-      const d = dummyRef.current;
+      // ==========================================
+      // 2. AEROSAR IS NOT JUST A DRONE
+      // ==========================================
+      const njTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".not-just-phase",
+          start: "top top",
+          end: "+=3000",
+          scrub: 1,
+          pin: true,
+        }
+      });
 
-      // 1. Approach
-      tl.to(".text-system", { opacity: 0, duration: 1 })
-        .to(d, { droneZ: -2, droneRotY: 0, droneRotX: 0.1, duration: 2 }, "<")
-        .to(".text-not-just", { opacity: 1, duration: 1 }, "-=1")
-        .to({}, { duration: 1 }) // pause
-        .to(".text-not-just", { opacity: 0, duration: 1 });
+      // Strict sequential timeline without overlap
+      njTl.fromTo(".nj-1", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1 })
+          .to({}, { duration: 0.5 }) // Hold
+          .to(".nj-1", { opacity: 0, y: -50, duration: 1 })
+          
+          .fromTo(".nj-2", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1 })
+          .to({}, { duration: 0.5 }) // Hold
+          .to(".nj-2", { opacity: 0, y: -50, duration: 1 })
+          
+          .fromTo(".nj-3", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1.5 })
+          .to({}, { duration: 1 }) // Hold longer for impact
+          .to(".nj-3", { opacity: 0, y: -50, duration: 1 })
+          
+          .fromTo(".nj-4", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1.5 })
+          .to({}, { duration: 1 });
 
-      // 2. Rotate & System text
-      tl.to(d, { droneRotY: Math.PI, duration: 2 })
-        .to(".text-rescue", { opacity: 1, duration: 1 }, "-=1")
-        .to({}, { duration: 1 })
-        .to(".text-rescue", { opacity: 0, duration: 1 });
+      // ==========================================
+      // 3. SYSTEM STORY PINNED SEQUENCE
+      // ==========================================
+      const stages = [
+        { name: "FLY", theme: themes.light },
+        { name: "SENSE", theme: themes.lightGrey },
+        { name: "MAP", theme: themes.light },
+        { name: "PERCEIVE", theme: themes.dark },
+        { name: "LOCALIZE", theme: themes.dark },
+        { name: "NAVIGATE", theme: themes.darkGrey },
+        { name: "INFORM", theme: themes.light }
+      ];
+      
+      const sysTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: pinRef.current,
+          start: "top top",
+          end: "+=7000", // Large scroll distance for readability
+          scrub: 1,
+          pin: true,
+        }
+      });
 
-      // 3. Highlight FC
-      tl.to(d, { droneRotY: Math.PI + Math.PI/4, droneRotX: 0.3, duration: 1.5 })
-        .to(".callout-fc", { opacity: 1, duration: 0.5 }, "-=0.5")
-        .to({}, { duration: 1.5 })
-        .to(".callout-fc", { opacity: 0, duration: 0.5 });
+      stages.forEach((stage, index) => {
+        const isFirst = index === 0;
+        
+        // Background theme transition
+        if (!isFirst && stages[index - 1].theme !== stage.theme) {
+          sysTl.to(containerRef.current, {
+            ...stage.theme,
+            duration: 1
+          }, "<");
+        }
 
-      // 4. Highlight Computer
-      tl.to(d, { droneRotY: Math.PI + Math.PI/2, droneRotX: 0, duration: 1.5 })
-        .to(".callout-computer", { opacity: 1, duration: 0.5 }, "-=0.5")
-        .to({}, { duration: 1.5 })
-        .to(".callout-computer", { opacity: 0, duration: 0.5 });
+        if (!isFirst) {
+          // Transition OUT previous stage
+          sysTl.to(`.stage-word-${index - 1}`, { 
+                  opacity: 0.1, 
+                  y: -150, 
+                  scale: 0.6, 
+                  color: "var(--sys-text-muted)",
+                  duration: 1 
+               })
+               .to(`.stage-vis-${index - 1}`, { opacity: 0, y: -50, duration: 1 }, "<")
+               .to(`.ind-${index - 1}`, { color: "var(--sys-text-muted)", fontWeight: 400, duration: 0.5 }, "<")
+               .to(".ind-line", { top: `${(index / (stages.length - 1)) * 100}%`, duration: 1 }, "<");
+        } else {
+          sysTl.to(".ind-line", { top: "0%", duration: 0.1 });
+        }
 
-      // 5. Highlight Sensors
-      tl.to(d, { droneRotY: Math.PI + Math.PI, droneRotX: -0.2, duration: 1.5 })
-        .to(".callout-sensor", { opacity: 1, duration: 0.5 }, "-=0.5")
-        .to({}, { duration: 1.5 })
-        .to(".callout-sensor", { opacity: 0, duration: 0.5 });
+        // Transition IN current stage
+        sysTl.fromTo(`.stage-word-${index}`, 
+                { opacity: 0, y: 150, scale: 0.8 }, 
+                { opacity: 1, y: 0, scale: 1, color: "var(--sys-text)", duration: 1 }, "<")
+             .fromTo(`.stage-vis-${index}`,
+                { opacity: 0, y: 50 },
+                { opacity: 1, y: 0, duration: 1 }, "<")
+             .to(`.ind-${index}`, { color: "#c91f2d", fontWeight: 700, duration: 0.5 }, "<") // Active indicator is Red
+             .to(".ind-counter", { innerText: `0${index + 1}` }, "<");
+             
+        // Hold frame to read
+        sysTl.to({}, { duration: 1.5 });
+      });
 
-      // 6. Highlight Frame
-      tl.to(d, { droneRotY: Math.PI * 2 + Math.PI/4, droneRotX: 0.2, duration: 1.5 })
-        .to(".callout-frame", { opacity: 1, duration: 0.5 }, "-=0.5")
-        .to({}, { duration: 1.5 })
-        .to(".callout-frame", { opacity: 0, duration: 0.5 });
+      // Exit last stage smoothly
+      sysTl.to(`.stage-word-6`, { opacity: 0, y: -150, scale: 0.6, duration: 1 })
+           .to(`.stage-vis-6`, { opacity: 0, y: -50, duration: 1 }, "<");
 
-      // 7. Explode View
-      tl.to(d, { 
-          explodeFrame: 2.5, 
-          explodeFC: 1, 
-          explodeComputer: -1, 
-          explodeSensor: -2, 
-          droneRotY: Math.PI * 2 + Math.PI/2,
-          droneZ: -4,
-          duration: 2 
-        })
-        .to(".text-exploded", { opacity: 1, duration: 1 }, "-=1.5")
-        .to(".callout-all", { opacity: 1, duration: 1 }, "<")
-        .to({}, { duration: 2 })
-        .to(".text-exploded", { opacity: 0, duration: 1 })
-        .to(".callout-all", { opacity: 0, duration: 1 }, "<");
+      // ==========================================
+      // 4. THE SYSTEM THINKS IN LAYERS
+      // ==========================================
+      const layerTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".layers-phase",
+          start: "top top",
+          end: "+=3000",
+          scrub: 1,
+          pin: true,
+        }
+      });
 
-      // 8. Re-assemble
-      tl.to(d, {
-          explodeFrame: 0, 
-          explodeFC: 0, 
-          explodeComputer: 0, 
-          explodeSensor: 0,
-          droneRotY: Math.PI * 2 + Math.PI,
-          droneZ: -2,
-          duration: 2
-        })
-        .to(".text-reassemble", { opacity: 1, duration: 1 }, "-=1")
-        .to({}, { duration: 1.5 })
-        .to(".text-reassemble", { opacity: 0, duration: 1 });
+      layerTl.fromTo(".layer-title", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1 })
+             .to({}, { duration: 0.5 })
+             .to(".layer-title", { y: -100, scale: 0.8, opacity: 0.3, duration: 1 })
+             
+             .fromTo(".layer-1", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 1 }, "-=0.5")
+             .fromTo(".layer-2", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 1 })
+             .fromTo(".layer-3", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 1 })
+             .fromTo(".layer-4", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 1 })
+             
+             .to({}, { duration: 1 })
+             
+             // Compress layers
+             .to(".layer-item", { y: 0, opacity: 0, duration: 1.5, stagger: 0.1 })
+             .fromTo(".layer-aerosar", { opacity: 0, scale: 0.8, letterSpacing: "0.2em" }, { opacity: 1, scale: 1, letterSpacing: "0em", duration: 2 }, "-=1")
+             .to({}, { duration: 1 });
 
-      // 9. Move away & Final Text
-      tl.to(d, { droneZ: -20, droneRotY: Math.PI * 4, duration: 2 })
-        .to(".text-transition", { opacity: 1, duration: 1 }, "-=1");
+      // ==========================================
+      // 5. TRANSITION TO TECHNOLOGY
+      // ==========================================
+      const finalTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".tech-transition",
+          start: "top 70%",
+          end: "bottom bottom",
+          scrub: 1,
+        }
+      });
 
-    }, sectionRef);
+      finalTl.to(containerRef.current, { ...themes.dark, duration: 1 })
+             .fromTo(".tech-text-1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 1 }, "<")
+             .to({}, { duration: 0.5 })
+             .fromTo(".tech-text-2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 1 });
+
+    }, containerRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative w-full h-screen bg-[#050505] overflow-hidden">
-      
-      {/* 3D Canvas */}
-      <div className="absolute inset-0 z-0 pointer-events-auto">
-        <Canvas camera={{ position: [0, 0, 8], fov: 45 }} dpr={[1, 2]}>
-          <ambientLight intensity={0.2} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
-          <directionalLight position={[-10, 10, -5]} intensity={0.5} color="#C91F2D" />
-          <spotLight position={[0, 10, 0]} intensity={0.5} penumbra={1} angle={0.5} />
-          
-          <DroneModel dummyRef={dummyRef} />
-          
-          <Environment preset="city" />
-        </Canvas>
+    <section 
+      ref={containerRef} 
+      className="relative w-full z-20 overflow-hidden transition-colors duration-[0ms]"
+      style={{ 
+        backgroundColor: "var(--sys-bg)",
+        color: "var(--sys-text)",
+        "--sys-bg": "#050505",
+        "--sys-text": "#F5F5F5",
+        "--sys-text-sec": "#D6D6D6",
+        "--sys-text-muted": "#A3A3A3"
+      }}
+    >
+      {/* 1. Opening Phase */}
+      <div className="opening-phase relative min-h-[120vh] flex flex-col justify-center px-6 md:px-16 lg:px-24 pt-32">
+        <div className="max-w-6xl w-full mx-auto">
+          <h1 className="font-space-grotesk font-bold text-6xl md:text-[8rem] lg:text-[10rem] leading-[0.85] tracking-tighter mb-12">
+            AEROSAR
+          </h1>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12">
+            <h2 className="font-space-grotesk text-3xl md:text-5xl lg:text-6xl font-medium leading-[1.1] tracking-tight max-w-3xl" style={{ color: "var(--sys-text-sec)" }}>
+              AUTONOMOUS <br className="hidden md:block" />
+              SEARCH & RESCUE <br className="hidden md:block" />
+              SYSTEM
+            </h2>
+            <div className="font-technical text-xs md:text-sm tracking-[0.2em] uppercase flex flex-col gap-2 border-l-2 border-[#c91f2d] pl-6" style={{ color: "var(--sys-text-muted)" }}>
+              <span>DESIGNED TO <span className="text-[#c91f2d]">PERCEIVE.</span></span>
+              <span>DESIGNED TO <span className="text-[#c91f2d]">NAVIGATE.</span></span>
+              <span>DESIGNED TO <span className="text-[#c91f2d]">INFORM.</span></span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* HTML Overlays */}
-      <div className="absolute inset-0 pointer-events-none z-10 flex flex-col items-center justify-center px-6">
-        
-        <div className="text-system font-technical text-xs tracking-[0.3em] text-aerosar-grey-light uppercase absolute">
-          AEROSAR / SYSTEM
+      {/* 2. AEROSAR IS NOT JUST A DRONE */}
+      <div className="not-just-phase h-[100vh] flex flex-col items-center justify-center px-6 text-center relative">
+        <div className="nj-1 absolute font-space-grotesk text-4xl md:text-6xl uppercase tracking-tight opacity-0">
+          AEROSAR
         </div>
-        
-        <div className="text-not-just font-space-grotesk text-4xl md:text-6xl lg:text-7xl text-aerosar-white uppercase tracking-tight text-center absolute opacity-0">
-          AEROSAR <br/>
-          <span className="text-aerosar-red">IS NOT JUST A DRONE.</span>
+        <div className="nj-2 absolute font-space-grotesk text-5xl md:text-7xl uppercase tracking-tight opacity-0" style={{ color: "var(--sys-text-sec)" }}>
+          IS NOT
         </div>
-        
-        <div className="text-rescue font-space-grotesk text-4xl md:text-6xl lg:text-7xl text-aerosar-white uppercase tracking-tight text-center absolute opacity-0">
-          IT IS AN AUTONOMOUS <br/>
-          <span className="text-aerosar-white/50">SEARCH & RESCUE SYSTEM.</span>
+        <div className="nj-3 absolute font-space-grotesk font-bold text-6xl md:text-8xl lg:text-[10rem] uppercase tracking-tighter text-[#c91f2d] leading-none opacity-0">
+          JUST A DRONE.
         </div>
-        
-        <div className="text-exploded font-space-grotesk text-3xl md:text-5xl lg:text-6xl text-aerosar-white uppercase tracking-tight text-center absolute opacity-0 bottom-24 md:bottom-32">
-          EVERY LAYER <span className="text-aerosar-red">HAS A PURPOSE.</span>
+        <div className="nj-4 absolute font-space-grotesk font-medium text-5xl md:text-7xl lg:text-[8rem] uppercase tracking-tight leading-none opacity-0">
+          IT IS A SYSTEM.
         </div>
-        
-        <div className="text-reassemble font-space-grotesk text-4xl md:text-6xl lg:text-7xl text-aerosar-white uppercase tracking-tight text-center absolute opacity-0">
-          ONE SYSTEM. <br/>
-          <span className="text-aerosar-white/50">MULTIPLE CAPABILITIES.</span>
-        </div>
-        
-        <div className="text-transition font-space-grotesk text-4xl md:text-6xl lg:text-7xl text-aerosar-white uppercase tracking-tight text-center absolute opacity-0">
-          THE MACHINE <br/>
-          <span className="text-aerosar-red">CAN ENTER THE SPACE.</span>
-        </div>
-
       </div>
 
-      {/* Very subtle structural grid on HTML layer */}
-      <div className="absolute inset-0 z-20 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none opacity-20 mask-image:radial-gradient(ellipse_at_center,black,transparent)]" />
-      
+      {/* 3. SYSTEM STORY PINNED SEQUENCE */}
+      <div ref={pinRef} className="pinned-sequence relative w-full h-[100vh] flex items-center px-6 md:px-16 lg:px-24">
+        
+        {/* Indicator (Left) */}
+        <div className="hidden md:flex w-48 flex-col justify-center h-full relative z-20">
+          <div className="font-technical text-xs tracking-[0.2em] mb-8 uppercase opacity-60">
+            SYSTEM FLOW <br/>
+            <span className="ind-counter font-bold text-[#c91f2d]">01</span> / 07
+          </div>
+          <div className="relative flex">
+            <div className="w-[2px] h-[300px] mr-6 relative" style={{ backgroundColor: "var(--sys-text-muted)", opacity: 0.2 }}>
+              <div className="ind-line absolute top-0 left-0 w-full h-[15%] bg-[#c91f2d]" />
+            </div>
+            <div className="flex flex-col justify-between h-[300px] font-technical text-[10px] tracking-widest uppercase">
+              {["FLY", "SENSE", "MAP", "PERCEIVE", "LOCALIZE", "NAVIGATE", "INFORM"].map((stage, i) => (
+                <div key={stage} className={`ind-${i}`} style={{ color: i === 0 ? "#c91f2d" : "var(--sys-text-muted)" }}>
+                  {stage}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Typography & Visualization Area */}
+        <div className="flex-1 relative h-full flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-12">
+          
+          {/* Typography Stack */}
+          <div className="relative w-full lg:w-1/2 h-[300px] flex items-center justify-center lg:justify-start">
+             {["FLY", "SENSE", "MAP", "PERCEIVE", "LOCALIZE", "NAVIGATE", "INFORM"].map((stage, i) => (
+                <div key={stage} className={`stage-word-${i} absolute font-space-grotesk font-bold text-[5rem] md:text-[8rem] lg:text-[10rem] uppercase tracking-tighter leading-none opacity-0 transform-origin-left`}>
+                  {stage}
+                </div>
+             ))}
+          </div>
+
+          {/* Visualizations Foreground */}
+          <div className="relative w-full lg:w-1/2 max-w-xl aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
+            
+            {/* FLY Vis */}
+            <div className="stage-vis-0 absolute inset-0 flex items-center justify-center opacity-0 border border-current" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <div className="w-full h-[2px] bg-[#c91f2d] relative overflow-hidden opacity-50">
+                 <div className="absolute top-0 left-0 h-full w-32 bg-white/50 blur-md animate-[slideRight_2s_ease-in-out_infinite]" />
+               </div>
+               <div className="absolute flex gap-8 md:gap-16 opacity-30">
+                 {[1,2,3,4,5].map(i => <div key={i} className="w-[1px] h-32 bg-current rotate-45" />)}
+               </div>
+            </div>
+
+            {/* SENSE Vis */}
+            <div className="stage-vis-1 absolute inset-0 border opacity-0 p-4 flex flex-col" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <div className="w-full flex justify-between font-technical text-[10px]" style={{ color: "var(--sys-text-muted)" }}>
+                 <span>CAM_FEED_01</span>
+                 <span className="text-[#c91f2d] animate-pulse">REC [•]</span>
+               </div>
+               <div className="flex-1 w-full mt-4 border relative overflow-hidden flex items-center justify-center" style={{ borderColor: "var(--sys-text-muted)" }}>
+                 <div className="w-full h-[20%] bg-[#c91f2d]/20 absolute top-0 animate-[scanDown_3s_linear_infinite]" />
+                 <div className="w-32 h-32 border rounded-full opacity-50" style={{ borderColor: "var(--sys-text)" }} />
+                 <div className="w-48 h-48 border rounded-full absolute opacity-20" style={{ borderColor: "var(--sys-text)" }} />
+               </div>
+            </div>
+
+            {/* MAP Vis */}
+            <div className="stage-vis-2 absolute inset-0 opacity-0 flex items-center justify-center border" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <div className="grid grid-cols-8 grid-rows-8 w-full h-full gap-1 p-4">
+                 {Array.from({length: 64}).map((_, i) => (
+                   <div key={i} className="border transition-opacity duration-1000" style={{ borderColor: "var(--sys-text-muted)", opacity: Math.random() * 0.5 }} />
+                 ))}
+               </div>
+               <div className="absolute w-32 h-32 border border-[#c91f2d] rounded-full animate-ping opacity-30" />
+            </div>
+
+            {/* PERCEIVE Vis */}
+            <div className="stage-vis-3 absolute inset-0 opacity-0 flex items-center justify-center border" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <div className="relative w-full h-full">
+                 <div className="absolute top-[20%] left-[20%] w-32 h-48 border-2 border-[#c91f2d] bg-[#c91f2d]/10 flex flex-col justify-end p-2">
+                   <span className="font-technical text-[10px] text-[#050505] bg-[#c91f2d] px-1 w-fit">PERSON 98%</span>
+                 </div>
+                 <div className="absolute top-[50%] left-[50%] w-24 h-24 border-2 flex flex-col justify-end p-2 opacity-50" style={{ borderColor: "var(--sys-text-sec)" }}>
+                   <span className="font-technical text-[10px] px-1 w-fit" style={{ backgroundColor: "var(--sys-text-sec)", color: "var(--sys-bg)" }}>OBSTACLE 85%</span>
+                 </div>
+               </div>
+            </div>
+
+            {/* LOCALIZE Vis */}
+            <div className="stage-vis-4 absolute inset-0 opacity-0 flex items-center justify-center border" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <div className="w-full h-[1px] absolute opacity-30" style={{ backgroundColor: "var(--sys-text)" }} />
+               <div className="h-full w-[1px] absolute opacity-30" style={{ backgroundColor: "var(--sys-text)" }} />
+               <div className="w-16 h-16 border-2 border-[#c91f2d] rounded-full relative flex items-center justify-center">
+                 <div className="w-2 h-2 bg-[#c91f2d] rounded-full animate-pulse" />
+                 <div className="absolute -right-28 top-0 font-technical text-[10px] text-[#c91f2d]">
+                   X: 45.231 <br/> Y: -12.441 <br/> Z: 2.100
+                 </div>
+               </div>
+            </div>
+
+            {/* NAVIGATE Vis */}
+            <div className="stage-vis-5 absolute inset-0 opacity-0 flex items-center justify-center border" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <svg className="w-full h-full p-8" viewBox="0 0 100 100" preserveAspectRatio="none">
+                 <path d="M 0 50 Q 25 10 50 50 T 100 50" fill="none" stroke="var(--sys-text-muted)" strokeWidth="0.5" strokeDasharray="2 2" />
+                 <path d="M 0 50 Q 25 10 50 50 T 100 50" fill="none" stroke="#c91f2d" strokeWidth="2" className="animate-[drawPath_3s_linear_infinite]" strokeDasharray="150" strokeDashoffset="150" />
+                 <circle cx="50" cy="50" r="2" fill="#c91f2d" className="animate-pulse" />
+               </svg>
+            </div>
+
+            {/* INFORM Vis */}
+            <div className="stage-vis-6 absolute inset-0 opacity-0 flex items-center justify-center border" style={{ borderColor: "var(--sys-text-muted)" }}>
+               <div className="border-l-2 border-[#c91f2d] pl-6 font-technical text-xs md:text-sm tracking-widest leading-loose flex flex-col w-3/4">
+                 <span className="text-[#c91f2d] font-bold">INCIDENT REPORT</span>
+                 <span><span style={{ color: "var(--sys-text-muted)" }}>STATUS:</span> LOCATED</span>
+                 <span><span style={{ color: "var(--sys-text-muted)" }}>COORDS:</span> REQ-44-A</span>
+                 <span><span style={{ color: "var(--sys-text-muted)" }}>ENV:</span> STABLE</span>
+                 <div className="mt-4 w-full h-[1px]" style={{ backgroundColor: "var(--sys-text-muted)" }} />
+                 <span className="mt-4 text-[10px]" style={{ color: "var(--sys-text-sec)" }}>AEROSAR COMMAND LINK ACTIVE</span>
+               </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      {/* 4. THE SYSTEM THINKS IN LAYERS */}
+      <div className="layers-phase h-[150vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
+        <h2 className="layer-title font-space-grotesk text-3xl md:text-5xl uppercase tracking-tight mb-16">
+          THE SYSTEM <br/>
+          <span className="text-[#c91f2d]">THINKS IN LAYERS.</span>
+        </h2>
+        
+        <div className="flex flex-col gap-4 font-space-grotesk text-2xl md:text-4xl lg:text-5xl uppercase tracking-tight relative w-full items-center">
+          <div className="layer-item layer-1">PERCEPTION</div>
+          <div className="layer-item layer-2"><span className="text-[#c91f2d] opacity-50">+</span> SPATIAL UNDERSTANDING</div>
+          <div className="layer-item layer-3"><span className="text-[#c91f2d] opacity-50">+</span> NAVIGATION</div>
+          <div className="layer-item layer-4"><span className="text-[#c91f2d] opacity-50">+</span> INCIDENT INTELLIGENCE</div>
+          
+          <div className="layer-aerosar absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-6xl md:text-[8rem] lg:text-[10rem] text-[#c91f2d] opacity-0 tracking-tighter">
+            AEROSAR
+          </div>
+        </div>
+      </div>
+
+      {/* 5. TRANSITION INTO TECHNOLOGY */}
+      <div className="tech-transition min-h-[100vh] flex flex-col items-center justify-center px-6 text-center">
+        <div className="tech-text-1 font-technical text-[10px] md:text-sm tracking-[0.3em] uppercase mb-12 flex flex-col md:flex-row gap-4 md:gap-8" style={{ color: "var(--sys-text-muted)" }}>
+          <span>ONE SYSTEM.</span>
+          <span className="hidden md:block text-[#c91f2d]">/</span>
+          <span>MULTIPLE LAYERS.</span>
+          <span className="hidden md:block text-[#c91f2d]">/</span>
+          <span>ONE MISSION.</span>
+        </div>
+        <h2 className="tech-text-2 font-space-grotesk text-5xl md:text-7xl lg:text-[8rem] uppercase tracking-tighter">
+          MAP THE <span className="text-[#c91f2d]">UNKNOWN.</span>
+        </h2>
+      </div>
+
+      {/* Custom Keyframes */}
+      <style>{`
+        @keyframes slideRight {
+          0% { left: -100px; }
+          100% { left: 100%; }
+        }
+        @keyframes scanDown {
+          0% { top: 0; }
+          50% { top: 80%; }
+          100% { top: 0; }
+        }
+        @keyframes drawPath {
+          0% { stroke-dashoffset: 150; }
+          100% { stroke-dashoffset: 0; }
+        }
+      `}</style>
     </section>
   );
 };
