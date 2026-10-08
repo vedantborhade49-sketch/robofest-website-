@@ -1,25 +1,23 @@
 import React from 'react';
 import MainLayout from './components/layout/MainLayout';
 import CinematicHero from './components/sections/CinematicHero';
-import MissionSection from './components/sections/MissionSection';
-import SystemSection from './components/sections/SystemSection';
-import SpatialSection from './components/sections/SpatialSection';
-import PerceptionSection from './components/sections/PerceptionSection';
-import IncidentSection from './components/sections/IncidentSection';
-import RagSection from './components/sections/RagSection';
-import LlmReportSection from './components/sections/LlmReportSection';
+import ProblemSection from './components/sections/ProblemSection';
+import SystemOverviewSection from './components/sections/SystemOverviewSection';
+import IntelligenceSection from './components/sections/IntelligenceSection';
+import PlatformSection from './components/sections/PlatformSection';
+import RescueMissionSection from './components/sections/RescueMissionSection';
+import ClosingSection from './components/sections/ClosingSection';
 
 function App() {
   return (
     <MainLayout>
       <CinematicHero />
-      <MissionSection />
-      <SystemSection />
-      <SpatialSection />
-      <PerceptionSection />
-      <IncidentSection />
-      <RagSection />
-      <LlmReportSection />
+      <ProblemSection />
+      <SystemOverviewSection />
+      <IntelligenceSection />
+      <PlatformSection />
+      <RescueMissionSection />
+      <ClosingSection />
     </MainLayout>
   );
 }
